@@ -1,0 +1,365 @@
+{
+  "model": {
+    "name": "Банковская система",
+    "version": "1.1.0",
+    "description": "Логическая модель управления клиентами, счетами и валютами",
+    "namespace": "banking.core",
+    "module": "account-management",
+    "status": {
+      "classes": "Experimental",
+      "attributes": "Approved"
+    }
+  },  
+  "classes": [
+    {
+      "name": "Клиент",
+      "code": "CLIENT",
+      "backend_code": "Client",
+      "description": "Юридическое или физическое лицо, заключившее договор с банком",
+      "type": "class",
+      "attributes": [
+        {
+          "name": "Идентификатор",
+          "code": "id",
+          "type": "Identifier",
+          "required": true,
+          "unique_flag": true,
+          "primary_key": true,
+          "description": "Суррогатный первичный ключ сущности"
+        },
+        {
+          "name": "Код",
+          "code": "code",
+          "type": "String",
+          "typeParams": { "length": 50 },
+          "required": true,
+          "unique_flag": true,
+          "description": "Внутренний бизнес-код клиента"
+        },
+        {
+          "name": "Наименование",
+          "code": "name",
+          "type": "String",
+          "typeParams": { "length": 255 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Полное наименование клиента (ФИО или название организации)"
+        },
+        {
+          "name": "Дата создания",
+          "code": "created_dttm",
+          "type": "Timestamp",
+          "required": true,
+          "unique_flag": false,
+          "description": "Момент регистрации клиента в системе"
+        },
+        {
+          "name": "Адреса",
+          "code": "addresses",
+          "type": "Collection",
+          "typeParams": { "targetClass": "ADDRESS", "targetAttribute": "collection_id" },
+          "required": false,
+          "unique_flag": false,
+          "description": "Коллекция адресов, привязанных к клиенту"
+        }
+      ]
+    },
+    {
+      "name": "Адрес",
+      "code": "ADDRESS",
+      "backend_code": "Address",
+      "description": "Зависимая сущность: почтовый или юридический адрес клиента",
+      "type": "class",
+      "attributes": [
+        {
+          "name": "Идентификатор",
+          "code": "id",
+          "type": "Identifier",
+          "required": true,
+          "unique_flag": true,
+          "primary_key": true,
+          "description": "Суррогатный первичный ключ"
+        },
+        {
+          "name": "Код",
+          "code": "code",
+          "type": "String",
+          "typeParams": { "length": 100 },
+          "required": true,
+          "unique_flag": true,
+          "description": "Уникальный код адреса для интеграций"
+        },
+        {
+          "name": "Наименование",
+          "code": "name",
+          "type": "String",
+          "typeParams": { "length": 500 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Полная строка адреса"
+        },
+        {
+          "name": "Идентификатор коллекции",
+          "code": "collection_id",
+          "type": "Identifier",
+          "required": true,
+          "unique_flag": false,
+          "description": "Обратная ссылка на родительскую сущность (Клиент)"
+        },
+        {
+          "name": "Тип адреса",
+          "code": "type",
+          "type": "Enum",
+          "typeParams": { "refClass": "enum_address_type" },
+          "required": true,
+          "unique_flag": false,
+          "description": "Классификация адреса (регистрация, проживание, юридический)"
+        },
+        {
+          "name": "Город",
+          "code": "city",
+          "type": "String",
+          "typeParams": { "length": 100 },
+          "required": false,
+          "unique_flag": false,
+          "description": "Населенный пункт"
+        },
+        {
+          "name": "Почтовый индекс",
+          "code": "postal_code",
+          "type": "String",
+          "typeParams": { "length": 20 },
+          "required": false,
+          "unique_flag": false,
+          "description": "Индекс почтового отделения"
+        },
+        {
+          "name": "Дата создания",
+          "code": "created_dttm",
+          "type": "Timestamp",
+          "required": true,
+          "unique_flag": false,
+          "description": "Момент добавления адреса в профиль"
+        }
+      ]
+    },
+    {
+      "name": "Банковский счет",
+      "code": "BANK_ACCOUNT",
+      "backend_code": "BankAccount",
+      "description": "Самостоятельная сущность: расчетный или ссудный счет клиента",
+      "type": "class",
+      "attributes": [
+        {
+          "name": "Идентификатор",
+          "code": "id",
+          "type": "Identifier",
+          "required": true,
+          "unique_flag": true,
+          "primary_key": true,
+          "description": "Суррогатный первичный ключ счета"
+        },
+        {
+          "name": "Код",
+          "code": "code",
+          "type": "String",
+          "typeParams": { "length": 30 },
+          "required": true,
+          "unique_flag": true,
+          "description": "Номер счета в банковской системе"
+        },
+        {
+          "name": "Наименование",
+          "code": "name",
+          "type": "String",
+          "typeParams": { "length": 200 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Назначение счета (Расчетный, Депозитный и т.д.)"
+        },
+        {
+          "name": "Идентификатор клиента",
+          "code": "client_id",
+          "type": "Reference",
+          "typeParams": { "refClass": "CLIENT", "refAttribute": "id", "keyType": "id" },
+          "required": true,
+          "unique_flag": false,
+          "description": "Ссылка на владельца счета"
+        },
+        {
+          "name": "Валюта",
+          "code": "currency",
+          "type": "Reference",
+          "typeParams": { "refClass": "CURRENCY", "refAttribute": "code", "keyType": "code" },
+          "required": true,
+          "unique_flag": false,
+          "description": "Валюта счета (ссылка по коду ISO)"
+        },
+        {
+          "name": "Баланс",
+          "code": "balance",
+          "type": "Decimal",
+          "typeParams": { "precision": 18, "scale": 2 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Текущий остаток средств в валюте счета"
+        },
+        {
+          "name": "Остаток в национальной валюте",
+          "code": "balance_national",
+          "type": "Decimal",
+          "typeParams": { "precision": 18, "scale": 2 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Остаток средств, пересчитанный в национальную валюту по курсу ЦБ"
+        },
+        {
+          "name": "Статус",
+          "code": "status",
+          "type": "Enum",
+          "typeParams": { "refClass": "enum_account_status" },
+          "required": true,
+          "unique_flag": false,
+          "description": "Текущее состояние счета в системе"
+        },
+        {
+          "name": "Дата открытия",
+          "code": "open_dt",
+          "type": "Date",
+          "required": true,
+          "unique_flag": false,
+          "description": "Дата активации счета"
+        },
+        {
+          "name": "Дата создания",
+          "code": "created_dttm",
+          "type": "Timestamp",
+          "required": true,
+          "unique_flag": false,
+          "description": "Момент создания записи в системе"
+        }
+      ]
+    },
+    {
+      "name": "Валюта",
+      "code": "CURRENCY",
+      "backend_code": "Currency",
+      "description": "Справочная сущность: параметры используемых валют",
+      "type": "class",
+      "attributes": [
+        {
+          "name": "Идентификатор",
+          "code": "id",
+          "type": "Identifier",
+          "required": true,
+          "unique_flag": true,
+          "primary_key": true,
+          "description": "Суррогатный первичный ключ"
+        },
+        {
+          "name": "Код",
+          "code": "code",
+          "type": "String",
+          "typeParams": { "length": 10 },
+          "required": true,
+          "unique_flag": true,
+          "description": "Код валюты по стандарту ISO 4217"
+        },
+        {
+          "name": "Наименование",
+          "code": "name",
+          "type": "String",
+          "typeParams": { "length": 100 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Полное наименование валюты"
+        },
+        {
+          "name": "Символ",
+          "code": "symbol",
+          "type": "String",
+          "typeParams": { "length": 5 },
+          "required": true,
+          "unique_flag": false,
+          "description": "Визуальный символ валюты"
+        },
+        {
+          "name": "Знаков после запятой",
+          "code": "decimal_places",
+          "type": "Integer",
+          "required": true,
+          "unique_flag": false,
+          "description": "Стандартная точность валюты"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "name": "Клиент владеет счетами",
+      "sourceClass": "CLIENT",
+      "targetClass": "BANK_ACCOUNT",
+      "type": "one-to-many",
+      "cascade": false,
+      "description": "Один клиент может иметь несколько самостоятельных счетов",
+      "sourceAttribute": null,
+      "targetAttribute": "client_id"
+    },
+    {
+      "name": "Клиент содержит адреса",
+      "sourceClass": "CLIENT",
+      "targetClass": "ADDRESS",
+      "type": "one-to-many-collection",
+      "cascade": true,
+      "description": "Адреса хранятся как коллекция внутри профиля клиента",
+      "sourceAttribute": "addresses",
+      "targetAttribute": "collection_id"
+    },
+    {
+      "name": "Счет номинирован в валюте",
+      "sourceClass": "CURRENCY",
+      "targetClass": "BANK_ACCOUNT",
+      "type": "one-to-many",
+      "cascade": false,
+      "description": "Одна валюта используется в множестве счетов",
+      "sourceAttribute": null,
+      "targetAttribute": "currency"
+    }
+  ],
+  "enums": [
+    {
+      "name": "Тип адреса",
+      "code": "enum_address_type",
+      "backend_code": "AddressType",
+      "is_flex": false,
+      "description": "Статическое перечисление категорий адресов",
+      "values": [
+        { "code": "REGISTRATION", "value": "registration", "description": "Адрес регистрации" },
+        { "code": "RESIDENCE", "value": "residence", "description": "Адрес фактического проживания" },
+        { "code": "LEGAL", "value": "legal", "description": "Юридический адрес организации" }
+      ]
+    },
+    {
+      "name": "Статус счета",
+      "code": "enum_account_status",
+      "backend_code": "AccountStatus",
+      "is_flex": true,
+      "description": "Динамический справочник состояний банковского счета",
+      "values": [
+        { "code": "ACTIVE", "value": "active", "description": "Счет активен и доступен для операций" },
+        { "code": "CLOSED", "value": "closed", "description": "Счет закрыт клиентом или банком" },
+        { "code": "FROZEN", "value": "frozen", "description": "Счет временно заморожен по решению регулятора" },
+        { "code": "BLOCKED", "value": "blocked", "description": "Счет заблокирован из-за подозрительной активности" }
+      ]
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-05-06T10:00:00Z",
+    "updatedAt": "2026-05-06T11:15:00Z",
+    "author": "LLM-Designer",
+    "changeLog": [
+      { "version": "1.0.0", "date": "2026-05-06", "changes": ["Initial design: CLIENT, ADDRESS, BANK_ACCOUNT, CURRENCY"] },
+      { "version": "1.1.0", "date": "2026-05-06", "changes": ["Added 'balance_national' Decimal attribute to BANK_ACCOUNT for reporting"] }
+    ]
+  }
+}

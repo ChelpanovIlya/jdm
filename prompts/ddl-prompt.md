@@ -1,0 +1,55 @@
+## 8. Правила создания физической модели данных (DDL) для PostgreSQL (PG)
+
+При создании DDL используй следующие соотвествия логических и физических типов данных PG:
+
+| Логический тип | Условие                               | Физический тип                                                                            |
+| :------------- | :------------------------------------ | :---------------------------------------------------------------------------------------- |
+| **Identifier** |                                       | Bigint                                                                                    |
+| **String**     |                                       | Varchar(length)                                                                           |
+| **Integer**    |                                       | Integer                                                                                   |
+| **Decimal**    |                                       | Numeric(precision,scale)                                                                  |
+| **Boolean**    |                                       | Boolean                                                                                   |
+| **Date**       |                                       | Date                                                                                      |
+| **Timestamp**  |                                       | Timestamp without time zone                                                               |
+| **Enum**       | is_flex=false                         | Создай тип БД, пример: CREATE TYPE enum_account_type AS ENUM('ACTIVE', 'PASSIVE');        |
+| **Enum**       | is_flex=true                          | Bigint, ссылка на таблицу sys_enum_item с вариантами                                      |
+| **Reference**  | id, keyType=id                        | Bigint                                                                                    |
+| **Reference**  | id, keyType=code                      | Тип refAttribute в refClass                                                               |
+| **Reference**  | Прочие                                | Bigint                                                                                    |
+| **Collection** |                                       | Bigint                                                                                    |
+
+Атрибуты-коллекции типа Collection должны создаватся в физической модели данных.
+
+Добавь в DDL SEQUENCE:
+CREATE SEQUENCE IF NOT EXISTS seq_id INCREMENT BY 1 NO MAXVALUE START WITH 1000000 CACHE 10 NO CYCLE;
+
+Поля id создавай с заполнение по умолчанию из SEQUENCE:
+id bigint NOT NULL DEFAULT nextval('seq_id')
+
+Поля для атрибутов с типом Collection создавай типа bigint с заполнением по умолчанию из SEQUENCE:
+bigint NOT NULL DEFAULT nextval('seq_id')
+
+Не создавай FOREIGN KEY для полей collection_id так как они могут ссылаться на разные таблицы.
+
+Добавляй в DDL таблицу для хранения вариантов гибких перечисляемых типов:
+CREATE TABLE SYS_ENUM_ITEM
+(
+	code varchar(63) NULL,
+	name varchar(160) NULL,
+	order_num integer NULL,
+	sys_class varchar(63) NULL,
+	id bigint NOT NULL DEFAULT nextval('seq_id')
+);
+
+Поля типа flex Enum создавай с типом Bigint как ссылку на таблицу sys_enum_item по id.
+
+
+## 8. Правила генерации демо данных
+
+Первичные ключи "id" типа Identifier, поля-коллекции типа Collection должны заполнятся последовательными значениями из общего нумератора, SEQUENCE не используй, значения задай непосредственно в INSERT, начни нумерацию с 1. Внимание, важно, строго используй сквозное значение id для всех таблиц.
+
+Варианты гибких перечисляемых типов (is_flex=true) должны заносится в таблицу sys_enum_item как INSERT INTO sys_enum_item (id, sys_class,order_num,code,name) values(...) где id - первичный ключи из общего нумератора, sys_class - код перечисляемого типа, order_num - номер варианта по порядку, code - код варианта, name - наименование варианта на русском языке для отображения в интерфейсе пользователя.  
+
+Ключевые слова SQL пиши в верхнем регистре.
+
+

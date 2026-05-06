@@ -1,0 +1,42 @@
+
+classDiagram
+    class CLIENT {
+        id Identifier "Идентификатор: Суррогатный первичный ключ (1a2b3c4d)"
+        code String(50) "Код: Внутренний бизнес-код клиента (CL-001)"
+        name String(255) "Наименование: Полное наименование клиента (ООО Ромашка)"
+        created_dttm Timestamp "Дата создания: Момент регистрации (2024-05-20T10:00:00)"
+        addresses Collection "Адреса: Коллекция связанных адресов ([id1, id2])"
+    }
+    class ADDRESS {
+        id Identifier "Идентификатор: Суррогатный первичный ключ (5e6f7g8h)"
+        code String(100) "Код: Уникальный код адреса для интеграций (ADDR-100)"
+        name String(500) "Наименование: Полная строка адреса (г. Москва, ул. Ленина, 1)"
+        collection_id Identifier "Идентификатор коллекции: Обратная ссылка на родителя"
+        type enum_address_type "Тип адреса: Классификация адреса (REGISTRATION)"
+        city String(100) "Город: Населенный пункт (Москва)"
+        postal_code String(20) "Почтовый индекс: Индекс почтового отделения (101000)"
+        created_dttm Timestamp "Дата создания: Момент добавления адреса в профиль"
+    }
+    class BANK_ACCOUNT {
+        id Identifier "Идентификатор: Суррогатный первичный ключ (9i0j1k2l)"
+        code String(30) "Код: Номер счета в банковской системе (40817810...)"
+        name String(200) "Наименование: Назначение счета (Расчетный счет)"
+        client_id Reference "Идентификатор клиента: Ссылка на владельца счета (cl-999)"
+        currency Reference "Валюта: Ссылка на валюту счета (RUB)"
+        balance Decimal(18_2) "Баланс: Текущий остаток в валюте счета (100000.00)"
+        balance_national Decimal(18_2) "Остаток в национальной валюте: Пересчитанный остаток по курсу ЦБ (150000.00)"
+        status enum_account_status "Статус: Текущее состояние счета (ACTIVE)"
+        open_dt Date "Дата открытия: Дата активации счета (2024-01-15)"
+        created_dttm Timestamp "Дата создания: Момент создания записи в системе"
+    }
+    class CURRENCY {
+        id Identifier "Идентификатор: Суррогатный первичный ключ (3m4n5o6p)"
+        code String(10) "Код: Код валюты по стандарту ISO 4217 (RUB)"
+        name String(100) "Наименование: Полное наименование валюты (Российский рубль)"
+        symbol String(5) "Символ: Визуальный символ валюты (₽)"
+        decimal_places Integer "Знаков после запятой: Стандартная точность валюты (2)"
+    }
+
+    CLIENT "1" -- "N" ADDRESS : CLIENT.addresses = ADDRESS.collection_id
+    CLIENT "1" -- "N" BANK_ACCOUNT : BANK_ACCOUNT.client_id = CLIENT.id
+    CURRENCY "1" -- "N" BANK_ACCOUNT : BANK_ACCOUNT.currency = CURRENCY.code
